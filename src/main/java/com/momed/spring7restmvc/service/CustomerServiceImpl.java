@@ -35,6 +35,13 @@ public class CustomerServiceImpl implements CustomerService {
                 .createdDate(LocalDateTime.now())
                 .lastModifiedDate(LocalDateTime.now())
                 .build();
+        Customer customer4 = Customer.builder()
+                .id(UUID.randomUUID())
+                .version(1)
+                .customerName("Customer 4")
+                .createdDate(LocalDateTime.now())
+                .lastModifiedDate(LocalDateTime.now())
+                .build();
 
 
         this.customerMap = new HashMap<>();
@@ -42,6 +49,7 @@ public class CustomerServiceImpl implements CustomerService {
         customerMap.put(customer1.getId(),customer1);
         customerMap.put(customer2.getId(),customer2);
         customerMap.put(customer3.getId(),customer3);
+        customerMap.put(customer4.getId(),customer4);
     }
 
     @Override
