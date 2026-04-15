@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.hamcrest.core.Is.is;
 import static org.mockito.BDDMockito.given;
@@ -23,11 +24,22 @@ class BeerControllerTest {
     @Autowired
     MockMvc mockMvc;
 
+    @Autowired
+    ObjectMapper objectMapper;
+
     @MockitoBean
     BeerService beerService;
 
     BeerServiceImpl beerServiceimpl = new BeerServiceImpl();
 
+    @Test
+    void testCreateNewBeer() {
+
+        Beer beer = beerServiceimpl.listBeers().getFirst();
+
+        System.out.println(objectMapper.writeValueAsString(beer));
+
+    }
     @Test
     void testListBeers() throws Exception {
         given(beerService.listBeers()).willReturn(beerServiceimpl.listBeers());
