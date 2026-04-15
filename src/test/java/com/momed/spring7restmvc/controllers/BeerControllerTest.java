@@ -3,6 +3,7 @@ package com.momed.spring7restmvc.controllers;
 import com.momed.spring7restmvc.model.Beer;
 import com.momed.spring7restmvc.service.BeerService;
 import com.momed.spring7restmvc.service.BeerServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MediaType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +13,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.hamcrest.core.Is.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(BeerController.class)
 class BeerControllerTest {
@@ -30,19 +31,34 @@ class BeerControllerTest {
     @MockitoBean
     BeerService beerService;
 
-    BeerServiceImpl beerServiceimpl = new BeerServiceImpl();
+    BeerServiceImpl beerServiceImpl = new BeerServiceImpl();
+
+    //A setup in order to clean the impl before each test in case it's changed.
+    @BeforeEach
+    void setUp(){
+        beerServiceImpl = new BeerServiceImpl();
+    }
 
     @Test
-    void testCreateNewBeer() {
+    void testCreateNewBeer() throws Exception {
 
-        Beer beer = beerServiceimpl.listBeers().getFirst();
+        Beer beer = beerServiceImpl.listBeers().getFirst();
+        beer.setVersion(null);
+        beer.setId(null);
 
-        System.out.println(objectMapper.writeValueAsString(beer));
+        given(beerService.saveNewBeer(any(Beer.class))).willReturn(beerServiceImpl.listBeers().get(1));
+
+        mockMvc.perform(post("/api/v1/beer")
+                .accept(String.valueOf(MediaType.APPLICATION_JSON))
+                .contentType(String.valueOf(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(beer)))
+                .andExpect(status().isCreated())
+                .andExpect(header().exists("location"));
 
     }
     @Test
     void testListBeers() throws Exception {
-        given(beerService.listBeers()).willReturn(beerServiceimpl.listBeers());
+        given(beerService.listBeers()).willReturn(beerServiceImpl.listBeers());
 
         mockMvc.perform(get("/api/v1/beer")
                 .accept(String.valueOf(MediaType.APPLICATION_JSON)))
@@ -50,7 +66,7 @@ class BeerControllerTest {
     }
     @Test
     void getBeerById() throws Exception {
-        Beer testBeer = beerServiceimpl.listBeers().getFirst();
+        Beer testBeer = beerServiceImpl.listBeers().getFirst();
 
         given(beerService.getBeerById(testBeer.getId())).willReturn(testBeer);
 
