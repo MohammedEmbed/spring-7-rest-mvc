@@ -12,11 +12,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.UUID;
+
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
@@ -40,8 +42,21 @@ class CustomerControllerTest {
     }
 
     @Test
-    void CreateNewCustomer() throws Exception {
+    void TestUpdateCustomer() throws Exception {
+        Customer customer = customerServiceImpl.listCustomers().getFirst();
 
+        mockMvc.perform(put("/api/v1/customer/"+customer.getId())
+                .accept(String.valueOf(MediaType.APPLICATION_JSON))
+                .contentType(String.valueOf(MediaType.APPLICATION_JSON))
+                .content(String.valueOf(MediaType.APPLICATION_JSON))
+                .content(objectMapper.writeValueAsString(customer)))
+                .andExpect(status().isNoContent());
+
+        verify(customerService).updateById(any(UUID.class),any(Customer.class));
+    }
+
+    @Test
+    void CreateNewCustomer() throws Exception {
         Customer customer = customerServiceImpl.listCustomers().getFirst();
         customer.setVersion(null);
         customer.setId(null);
